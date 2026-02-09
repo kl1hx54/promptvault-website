@@ -932,7 +932,13 @@
             </div>
         </div>
 
-        <div class="gallery" id="gallery"></div>
+        <div class="gallery" id="gallery">
+            <div style="grid-column: 1/-1; text-align: center; padding: 80px 20px;">
+                <div style="font-size: 64px; margin-bottom: 20px;">⏳</div>
+                <h3 style="font-size: 24px; margin-bottom: 12px;">Loading prompts...</h3>
+                <p style="color: #9ca3af;">Fetching amazing AI prompts from Firebase</p>
+            </div>
+        </div>
     </div>
 
     <div class="modal" id="modal">
@@ -963,173 +969,11 @@
     </a>
 
     <script>
-        // Load prompts from localStorage (managed by admin panel)
-        let prompts = JSON.parse(localStorage.getItem('promptvault_prompts') || '[]');
-        
-        // Initialize with sample data if empty
-        if (prompts.length === 0) {
-            prompts = [
-                {
-                    id: 1,
-                    image: 'https://images.unsplash.com/photo-1579547945413-497e1b99dac0?w=800&q=80',
-                    prompt: 'A cyberpunk warrior riding a majestic white horse through neon-lit rain-soaked streets at midnight, dramatic volumetric lighting, reflections on wet pavement, ultra detailed 8K',
-                    tags: ['cyberpunk', 'horse', 'neon', 'rain', 'warrior'],
-                    likes: 2847,
-                    date: '2026-01-28'
-                },
-                {
-                    id: 2,
-                    image: 'https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?w=800&q=80',
-                    prompt: 'Ethereal forest goddess emerging from morning mist, bioluminescent flowers, soft golden hour light filtering through ancient trees, fantasy art style',
-                    tags: ['fantasy', 'goddess', 'forest', 'bioluminescent'],
-                    likes: 1923,
-                    date: '2026-01-27'
-                },
-                {
-                    id: 3,
-                    image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80',
-                    prompt: 'Futuristic floating city above the clouds, advanced architecture with organic curves, sunset sky with purple and orange hues, concept art quality',
-                    tags: ['scifi', 'city', 'futuristic', 'architecture'],
-                    likes: 3201,
-                    date: '2026-01-29'
-                },
-                {
-                    id: 4,
-                    image: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800&q=80',
-                    prompt: 'Majestic dragon perched on mountain peak during thunderstorm, lightning illuminating scales, epic fantasy composition, cinematic lighting',
-                    tags: ['dragon', 'mountain', 'storm', 'fantasy'],
-                    likes: 2654,
-                    date: '2026-01-26'
-                },
-                {
-                    id: 5,
-                    image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80',
-                    prompt: 'Serene zen garden on Mars, red desert landscape with Japanese architecture, Earth visible in pink sky, surreal combination of cultures',
-                    tags: ['mars', 'zen', 'surreal', 'architecture'],
-                    likes: 1567,
-                    date: '2026-01-25'
-                },
-                {
-                    id: 6,
-                    image: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=800&q=80',
-                    prompt: 'Cosmic whale swimming through nebula clouds, stars trailing behind, bioluminescent patterns on skin, dreamlike space scene',
-                    tags: ['whale', 'space', 'nebula', 'cosmic'],
-                    likes: 4102,
-                    date: '2026-01-30'
-                }
-            ];
-            localStorage.setItem('promptvault_prompts', JSON.stringify(prompts));
-        }
-
-        let currentPrompt = null;
-        let sortMode = 'popular';
-        
-        // Load likes from localStorage
-        let userLikes = JSON.parse(localStorage.getItem('promptvault_likes') || '{}');
-        
-        // Update prompt likes with saved user likes
-        prompts.forEach(prompt => {
-            if (userLikes[prompt.id]) {
-                prompt.currentLikes = prompt.likes + 1;
-            } else {
-                prompt.currentLikes = prompt.likes;
-            }
-        });
-
-        function isLiked(id) {
-            return userLikes[id] === true;
-        }
-
-        function toggleLike(id) {
-            const prompt = prompts.find(p => p.id === id);
-            
-            if (userLikes[id]) {
-                delete userLikes[id];
-                prompt.currentLikes = prompt.likes;
-                showToast('Like removed! 💔');
-            } else {
-                userLikes[id] = true;
-                prompt.currentLikes = prompt.likes + 1;
-                showToast('Liked! ❤️ Now more popular!');
-            }
-            
-            localStorage.setItem('promptvault_likes', JSON.stringify(userLikes));
-            renderGallery();
-        }
-
-        function setSortMode(mode) {
-            sortMode = mode;
-            
-            // Update active tab
-            document.querySelectorAll('.sort-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.getElementById(`tab-${mode}`).classList.add('active');
-            
-            renderGallery();
-        }
-
-        function getSortedPrompts() {
-            let filtered = [...prompts];
-            
-            // Apply search filter
-            if (searchQuery) {
-                filtered = filtered.filter(p => 
-                    p.prompt.toLowerCase().includes(searchQuery) || 
-                    p.tags.some(tag => tag.toLowerCase().includes(searchQuery))
-                );
-            }
-            
-            if (sortMode === 'popular') {
-                // Sort by current likes (highest first)
-                return filtered.sort((a, b) => b.currentLikes - a.currentLikes);
-            } else if (sortMode === 'newest') {
-                // Sort by date (newest first)
-                return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
-            } else {
-                // Original order
-                return filtered.sort((a, b) => a.id - b.id);
-            }
-        }
-
-        function renderGallery() {
-            const gallery = document.getElementById('gallery');
-            const sortedPrompts = getSortedPrompts();
-            const maxLikes = Math.max(...prompts.map(p => p.currentLikes));
-            
-            // Show empty state if no results
-            if (sortedPrompts.length === 0) {
-                gallery.innerHTML = `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 80px 20px;">
-                        <div style="font-size: 64px; margin-bottom: 20px;">🔍</div>
-                        <h3 style="font-size: 24px; margin-bottom: 12px;">No prompts found</h3>
-                        <p style="color: #9ca3af;">Try adjusting your search or filters</p>
-                        ${searchQuery ? `<button onclick="clearSearch()" style="margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #9333ea, #ec4899); border: none; border-radius: 12px; color: white; font-weight: 600; cursor: pointer;">Clear Search</button>` : ''}
-                    </div>
-                `;
-                return;
-            }
-            
-            gallery.innerHTML = sortedPrompts.map((prompt, index) => {
-                const liked = isLiked(prompt.id);
-                const isTopRanked = sortMode === 'popular' && index < 3;
-                
-                return `
-                <div class="card" onclick="openModal(${prompt.id})">
-                    <div class="card-image">
-                        <img src="${prompt.image}" alt="${prompt.prompt}">
-                        ${isTopRanked ? `<div class="popular-badge">${index === 0 ? '🏆' : index === 1 ? '🥈' : '🥉'} Top ${index + 1}</div>` : ''}
-                        <div class="card-stats">
-                            <div class="likes ${liked ? 'liked' : ''}">
-                                <span class="heart">❤️</span>
-                                <span>${prompt.currentLikes.toLocaleString()}</span>
-                            </div>
-    <script>
-        // Load prompts from Firebase (will be populated by Firebase SDK)
+        // Global variables
         let prompts = [];
-
         let currentPrompt = null;
         let sortMode = 'popular';
+        let searchQuery = '';
         
         // Load likes from localStorage
         let userLikes = JSON.parse(localStorage.getItem('promptvault_likes') || '{}');
@@ -1140,14 +984,13 @@
 
         function toggleLike(id) {
             const prompt = prompts.find(p => p.id === id);
+            if (!prompt) return;
             
             if (userLikes[id]) {
-                // Unlike
                 delete userLikes[id];
                 prompt.currentLikes = prompt.likes;
                 showToast('Like removed! 💔');
             } else {
-                // Like
                 userLikes[id] = true;
                 prompt.currentLikes = prompt.likes + 1;
                 showToast('Liked! ❤️ Now more popular!');
@@ -1185,7 +1028,11 @@
             } else if (sortMode === 'newest') {
                 return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
             } else {
-                return filtered;
+                return filtered.sort((a, b) => {
+                    if (a.id < b.id) return -1;
+                    if (a.id > b.id) return 1;
+                    return 0;
+                });
             }
         }
 
@@ -1212,7 +1059,7 @@
                 return `
                 <div class="card" onclick="openModal('${prompt.id}')">
                     <div class="card-image">
-                        <img src="${prompt.image}" alt="${prompt.prompt}">
+                        <img src="${prompt.image}" alt="AI Prompt" loading="lazy">
                         ${isTopRanked ? `<div class="popular-badge">${index === 0 ? '🏆' : index === 1 ? '🥈' : '🥉'} Top ${index + 1}</div>` : ''}
                         <div class="card-stats">
                             <div class="likes ${liked ? 'liked' : ''}">
@@ -1224,18 +1071,24 @@
                             </div>
                         </div>
                         <div class="card-overlay">
-                            <p class="card-prompt">${prompt.prompt}</p>
+                            <p class="card-prompt">${escapeHtml(prompt.prompt)}</p>
                             <div class="tags">
-                                ${prompt.tags.map(tag => `<span class="tag">#${tag}</span>`).join('')}
+                                ${prompt.tags.map(tag => `<span class="tag">#${escapeHtml(tag)}</span>`).join('')}
                             </div>
                         </div>
-                        <button class="copy-btn" onclick="event.stopPropagation(); quickCopy(\`${prompt.prompt}\`)">
+                        <button class="copy-btn" onclick="event.stopPropagation(); quickCopy(\`${escapeHtml(prompt.prompt).replace(/`/g, '\\`')}\`)">
                             📋
                         </button>
                     </div>
                 </div>
             `;
             }).join('');
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
         
         function clearSearch() {
@@ -1246,6 +1099,8 @@
 
         function openModal(id) {
             currentPrompt = prompts.find(p => p.id === id);
+            if (!currentPrompt) return;
+            
             const sortedPrompts = getSortedPrompts();
             const rank = sortedPrompts.findIndex(p => p.id === id) + 1;
             
@@ -1264,7 +1119,7 @@
                 ` : ''}
             `;
             document.getElementById('modalTags').innerHTML = currentPrompt.tags
-                .map(tag => `<span class="tag">#${tag}</span>`).join('');
+                .map(tag => `<span class="tag">#${escapeHtml(tag)}</span>`).join('');
             document.getElementById('modal').classList.add('active');
         }
 
@@ -1294,7 +1149,6 @@
         }
 
         // Search functionality with autocomplete
-        let searchQuery = '';
         const searchInput = document.getElementById('searchInput');
         const autocompleteDropdown = document.getElementById('autocompleteDropdown');
         
@@ -1351,7 +1205,7 @@
                 matchingTags.forEach(tag => {
                     const highlighted = highlightMatch(tag, query);
                     html += `
-                        <div class="autocomplete-item" onclick="selectSuggestion('${tag}')">
+                        <div class="autocomplete-item" onclick="selectSuggestion('${escapeHtml(tag)}')">
                             <span class="icon">🏷️</span>
                             <div class="text">
                                 <div class="main">${highlighted}</div>
@@ -1374,7 +1228,7 @@
                             <span class="icon">✨</span>
                             <div class="text">
                                 <div class="main">${highlighted}</div>
-                                <div class="sub">${prompt.tags.slice(0, 3).map(t => '#' + t).join(' ')}</div>
+                                <div class="sub">${prompt.tags.slice(0, 3).map(t => '#' + escapeHtml(t)).join(' ')}</div>
                             </div>
                         </div>
                     `;
@@ -1392,13 +1246,13 @@
         
         function highlightMatch(text, query) {
             const index = text.toLowerCase().indexOf(query.toLowerCase());
-            if (index === -1) return text;
+            if (index === -1) return escapeHtml(text);
             
             const before = text.substring(0, index);
             const match = text.substring(index, index + query.length);
             const after = text.substring(index + query.length);
             
-            return `${before}<span class="match">${match}</span>${after}`;
+            return `${escapeHtml(before)}<span class="match">${escapeHtml(match)}</span>${escapeHtml(after)}`;
         }
         
         function selectSuggestion(tag) {
@@ -1473,8 +1327,6 @@
                 prompts.forEach(prompt => {
                     if (userLikes[prompt.id]) {
                         prompt.currentLikes = prompt.likes + 1;
-                    } else {
-                        prompt.currentLikes = prompt.likes;
                     }
                 });
 
