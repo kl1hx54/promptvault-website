@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromptVault Demo - Dynamic Sorting!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a0033 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #9333ea, #ec4899);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            transform: rotate(12deg);
+        }
+        
+        .logo-text {
+            font-size: 28px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #a855f7, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .sort-tabs {
+            display: flex;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px;
+            border-radius: 16px;
+        }
+        
+        .sort-tab {
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: none;
+            background: transparent;
+            color: #9ca3af;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .sort-tab:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .sort-tab.active {
+            background: linear-gradient(135deg, #9333ea, #ec4899);
+            color: white;
+        }
+        
+        .hero {
+            text-align: center;
+            padding: 80px 20px 60px;
+        }
+        
+        .hero h1 {
+            font-size: 72px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            line-height: 1.1;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #a855f7, #f472b6, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero p {
+            font-size: 24px;
+            color: #9ca3af;
+            margin-bottom: 40px;
+        }
+        
+        .search-box {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 20px 20px 20px 60px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            color: white;
+            font-size: 18px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .search-box input:focus {
+            border-color: #9333ea;
+            box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 24px;
+            opacity: 0.5;
+        }
+        
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(26, 26, 26, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            margin-top: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+        
+        .autocomplete-dropdown.active {
+            display: block;
+        }
+        
+        .autocomplete-section {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .autocomplete-section:last-child {
+            border-bottom: none;
+        }
+        
+        .autocomplete-label {
+            padding: 8px 20px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .autocomplete-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .autocomplete-item:hover {
+            background: rgba(147, 51, 234, 0.1);
+        }
+        
+        .autocomplete-item .icon {
+            font-size: 18px;
+            opacity: 0.7;
+        }
+        
+        .autocomplete-item .text {
+            flex: 1;
+        }
+        
+        .autocomplete-item .text .main {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .autocomplete-item .text .sub {
+            color: #9ca3af;
+            font-size: 13px;
+        }
+        
+        .autocomplete-item .match {
+            color: #a855f7;
+            font-weight: 700;
+        }
+        
+        .autocomplete-item .count {
+            font-size: 12px;
+            color: #6b7280;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+        
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 24px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+        
+        .card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 30px 60px rgba(147, 51, 234, 0.4);
+            border-color: rgba(147, 51, 234, 0.3);
+        }
+        
+        .popular-badge {
+            position: absolute;
+            top: 70px;
+            left: 16px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            z-index: 5;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+        }
+        
+        .card-image {
+            position: relative;
+            aspect-ratio: 4/5;
+            overflow: hidden;
+        }
+        
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.7s ease;
+        }
+        
+        .card:hover .card-image img {
+            transform: scale(1.1);
+        }
+        
+        .card-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 24px;
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .card:hover .card-overlay {
+            opacity: 1;
+        }
+        
+        .card-prompt {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 12px;
+            color: #e5e7eb;
+        }
+        
+        .card-stats {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            right: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .likes {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .likes.liked {
+            background: rgba(236, 72, 153, 0.3);
+            border: 1px solid rgba(236, 72, 153, 0.5);
+        }
+        
+        .heart {
+            color: #ec4899;
+            font-size: 18px;
+        }
+        
+        .favorite-btn {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 20px;
+        }
+        
+        .favorite-btn:hover {
+            background: #ec4899;
+            border-color: #ec4899;
+            transform: scale(1.1);
+        }
+        
+        .favorite-btn.active {
+            background: #ec4899;
+            border-color: #ec4899;
+            animation: heartBeat 0.3s ease;
+        }
+        
+        @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .tag {
+            background: rgba(147, 51, 234, 0.2);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #c084fc;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            background: linear-gradient(135deg, #9333ea, #ec4899);
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.3s;
+            font-size: 20px;
+            box-shadow: 0 8px 16px rgba(147, 51, 234, 0.4);
+        }
+        
+        .card:hover .copy-btn {
+            opacity: 1;
+        }
+        
+        .copy-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+            border-radius: 32px;
+            max-width: 1200px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: scaleIn 0.3s;
+            position: relative;
+        }
+        
+        @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .modal-image {
+            aspect-ratio: 1;
+        }
+        
+        .modal-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .modal-details {
+            padding: 60px;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+        
+        .modal-title {
+            font-size: 36px;
+            font-weight: 900;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #a855f7, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .modal-prompt {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 30px;
+            line-height: 1.8;
+            color: #d1d5db;
+        }
+        
+        .modal-copy-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #9333ea, #ec4899);
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 30px;
+        }
+        
+        .modal-copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(147, 51, 234, 0.4);
+        }
+        
+        .modal-stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-badge {
+            background: rgba(236, 72, 153, 0.1);
+            border: 1px solid rgba(236, 72, 153, 0.3);
+            padding: 12px 20px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            color: #f472b6;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #9333ea, #ec4899);
+            padding: 20px 30px;
+            border-radius: 20px;
+            box-shadow: 0 12px 24px rgba(147, 51, 234, 0.5);
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 2000;
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .toast.active {
+            display: flex;
+        }
+        
+        .buy-egg-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            padding: 16px 24px;
+            border-radius: 50px;
+            box-shadow: 0 8px 24px rgba(251, 191, 36, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 100;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            font-weight: 700;
+            text-decoration: none;
+            color: white;
+        }
+        
+        .buy-egg-btn:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 12px 32px rgba(251, 191, 36, 0.6);
+        }
+        
+        .buy-egg-btn .egg-icon {
+            font-size: 24px;
+            animation: wiggle 1s ease-in-out infinite;
+        }
+        
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-10deg); }
+            50% { transform: rotate(10deg); }
+        }
+        
+        .buy-egg-btn .egg-text {
+            font-size: 16px;
+        }
+        
+        @media (max-width: 768px) {
+            .buy-egg-btn {
+                bottom: 20px;
+                left: 20px;
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+            .buy-egg-btn .egg-icon {
+                font-size: 20px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 48px; }
+            .hero p { font-size: 18px; }
+            .modal-content {
+                grid-template-columns: 1fr;
+            }
+            .modal-details {
+                padding: 30px;
+            }
+            .sort-tabs {
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo">✨</div>
+                <div class="logo-text">PromptVault</div>
+            </div>
+            <div class="sort-tabs">
+                <button class="sort-tab active" onclick="setSortMode('popular')" id="tab-popular">🔥 Popular</button>
+                <button class="sort-tab" onclick="setSortMode('newest')" id="tab-newest">✨ Newest</button>
+                <button class="sort-tab" onclick="setSortMode('original')" id="tab-original">📊 Default</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="hero">
+            <h1>
+                <span class="gradient-text">Discover</span><br>
+                Amazing AI Prompts
+            </h1>
+            <p>Like prompts to make them popular - Most liked appear first!</p>
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="Search prompts or tags..." id="searchInput" autocomplete="off">
+                <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+            </div>
+        </div>
+
+        <div class="gallery" id="gallery"></div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="close-btn" onclick="closeModal()">×</div>
+        <div class="modal-content">
+            <div class="modal-image">
+                <img id="modalImage" src="" alt="">
+            </div>
+            <div class="modal-details">
+                <div class="modal-stats" id="modalStats"></div>
+                <h2 class="modal-title">Prompt Details</h2>
+                <div class="modal-prompt" id="modalPrompt"></div>
+                <button class="modal-copy-btn" onclick="copyPrompt()">📋 Copy Prompt</button>
+                <div class="tags" id="modalTags"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">
+        <span>✨</span>
+        <span id="toastMessage">Copied to clipboard!</span>
+    </div>
+
+    <!-- Buy Me an Egg Button -->
+    <a href="https://www.buymeacoffee.com/yourusername" target="_blank" class="buy-egg-btn" title="Support with an egg 🥚">
+        <span class="egg-icon">🥚</span>
+        <span class="egg-text">Buy me an egg!</span>
+    </a>
+
+    <script>
+        // Load prompts from localStorage (managed by admin panel)
+        let prompts = JSON.parse(localStorage.getItem('promptvault_prompts') || '[]');
+        
+        // Initialize with sample data if empty
+        if (prompts.length === 0) {
+            prompts = [
+                {
+                    id: 1,
+                    image: 'https://images.unsplash.com/photo-1579547945413-497e1b99dac0?w=800&q=80',
+                    prompt: 'A cyberpunk warrior riding a majestic white horse through neon-lit rain-soaked streets at midnight, dramatic volumetric lighting, reflections on wet pavement, ultra detailed 8K',
+                    tags: ['cyberpunk', 'horse', 'neon', 'rain', 'warrior'],
+                    likes: 2847,
+                    date: '2026-01-28'
+                },
+                {
+                    id: 2,
+                    image: 'https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?w=800&q=80',
+                    prompt: 'Ethereal forest goddess emerging from morning mist, bioluminescent flowers, soft golden hour light filtering through ancient trees, fantasy art style',
+                    tags: ['fantasy', 'goddess', 'forest', 'bioluminescent'],
+                    likes: 1923,
+                    date: '2026-01-27'
+                },
+                {
+                    id: 3,
+                    image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80',
+                    prompt: 'Futuristic floating city above the clouds, advanced architecture with organic curves, sunset sky with purple and orange hues, concept art quality',
+                    tags: ['scifi', 'city', 'futuristic', 'architecture'],
+                    likes: 3201,
+                    date: '2026-01-29'
+                },
+                {
+                    id: 4,
+                    image: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800&q=80',
+                    prompt: 'Majestic dragon perched on mountain peak during thunderstorm, lightning illuminating scales, epic fantasy composition, cinematic lighting',
+                    tags: ['dragon', 'mountain', 'storm', 'fantasy'],
+                    likes: 2654,
+                    date: '2026-01-26'
+                },
+                {
+                    id: 5,
+                    image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80',
+                    prompt: 'Serene zen garden on Mars, red desert landscape with Japanese architecture, Earth visible in pink sky, surreal combination of cultures',
+                    tags: ['mars', 'zen', 'surreal', 'architecture'],
+                    likes: 1567,
+                    date: '2026-01-25'
+                },
+                {
+                    id: 6,
+                    image: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=800&q=80',
+                    prompt: 'Cosmic whale swimming through nebula clouds, stars trailing behind, bioluminescent patterns on skin, dreamlike space scene',
+                    tags: ['whale', 'space', 'nebula', 'cosmic'],
+                    likes: 4102,
+                    date: '2026-01-30'
+                }
+            ];
+            localStorage.setItem('promptvault_prompts', JSON.stringify(prompts));
+        }
+
+        let currentPrompt = null;
+        let sortMode = 'popular';
+        
+        // Load likes from localStorage
+        let userLikes = JSON.parse(localStorage.getItem('promptvault_likes') || '{}');
+        
+        // Update prompt likes with saved user likes
+        prompts.forEach(prompt => {
+            if (userLikes[prompt.id]) {
+                prompt.currentLikes = prompt.likes + 1;
+            } else {
+                prompt.currentLikes = prompt.likes;
+            }
+        });
+
+        function isLiked(id) {
+            return userLikes[id] === true;
+        }
+
+        function toggleLike(id) {
+            const prompt = prompts.find(p => p.id === id);
+            
+            if (userLikes[id]) {
+                delete userLikes[id];
+                prompt.currentLikes = prompt.likes;
+                showToast('Like removed! 💔');
+            } else {
+                userLikes[id] = true;
+                prompt.currentLikes = prompt.likes + 1;
+                showToast('Liked! ❤️ Now more popular!');
+            }
+            
+            localStorage.setItem('promptvault_likes', JSON.stringify(userLikes));
+            renderGallery();
+        }
+
+        function setSortMode(mode) {
+            sortMode = mode;
+            
+            // Update active tab
+            document.querySelectorAll('.sort-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(`tab-${mode}`).classList.add('active');
+            
+            renderGallery();
+        }
+
+        function getSortedPrompts() {
+            let filtered = [...prompts];
+            
+            // Apply search filter
+            if (searchQuery) {
+                filtered = filtered.filter(p => 
+                    p.prompt.toLowerCase().includes(searchQuery) || 
+                    p.tags.some(tag => tag.toLowerCase().includes(searchQuery))
+                );
+            }
+            
+            if (sortMode === 'popular') {
+                // Sort by current likes (highest first)
+                return filtered.sort((a, b) => b.currentLikes - a.currentLikes);
+            } else if (sortMode === 'newest') {
+                // Sort by date (newest first)
+                return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+            } else {
+                // Original order
+                return filtered.sort((a, b) => a.id - b.id);
+            }
+        }
+
+        function renderGallery() {
+            const gallery = document.getElementById('gallery');
+            const sortedPrompts = getSortedPrompts();
+            const maxLikes = Math.max(...prompts.map(p => p.currentLikes));
+            
+            // Show empty state if no results
+            if (sortedPrompts.length === 0) {
+                gallery.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 80px 20px;">
+                        <div style="font-size: 64px; margin-bottom: 20px;">🔍</div>
+                        <h3 style="font-size: 24px; margin-bottom: 12px;">No prompts found</h3>
+                        <p style="color: #9ca3af;">Try adjusting your search or filters</p>
+                        ${searchQuery ? `<button onclick="clearSearch()" style="margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #9333ea, #ec4899); border: none; border-radius: 12px; color: white; font-weight: 600; cursor: pointer;">Clear Search</button>` : ''}
+                    </div>
+                `;
+                return;
+            }
+            
+            gallery.innerHTML = sortedPrompts.map((prompt, index) => {
+                const liked = isLiked(prompt.id);
+                const isTopRanked = sortMode === 'popular' && index < 3;
+                
+                return `
+                <div class="card" onclick="openModal(${prompt.id})">
+                    <div class="card-image">
+                        <img src="${prompt.image}" alt="${prompt.prompt}">
+                        ${isTopRanked ? `<div class="popular-badge">${index === 0 ? '🏆' : index === 1 ? '🥈' : '🥉'} Top ${index + 1}</div>` : ''}
+                        <div class="card-stats">
+                            <div class="likes ${liked ? 'liked' : ''}">
+                                <span class="heart">❤️</span>
+                                <span>${prompt.currentLikes.toLocaleString()}</span>
+                            </div>
+                            <div class="favorite-btn ${liked ? 'active' : ''}" onclick="event.stopPropagation(); toggleLike(${prompt.id})">
+                                ${liked ? '❤️' : '🤍'}
+                            </div>
+                        </div>
+                        <div class="card-overlay">
+                            <p class="card-prompt">${prompt.prompt}</p>
+                            <div class="tags">
+                                ${prompt.tags.map(tag => `<span class="tag">#${tag}</span>`).join('')}
+                            </div>
+                        </div>
+                        <button class="copy-btn" onclick="event.stopPropagation(); quickCopy(\`${prompt.prompt}\`)">
+                            📋
+                        </button>
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+        
+        function clearSearch() {
+            searchQuery = '';
+            document.getElementById('searchInput').value = '';
+            renderGallery();
+        }
+
+        function openModal(id) {
+            currentPrompt = prompts.find(p => p.id === id);
+            const sortedPrompts = getSortedPrompts();
+            const rank = sortedPrompts.findIndex(p => p.id === id) + 1;
+            
+            document.getElementById('modalImage').src = currentPrompt.image;
+            document.getElementById('modalPrompt').textContent = currentPrompt.prompt;
+            document.getElementById('modalStats').innerHTML = `
+                <div class="stat-badge">
+                    <span>❤️</span>
+                    <span>${currentPrompt.currentLikes.toLocaleString()} likes</span>
+                </div>
+                ${sortMode === 'popular' ? `
+                <div class="stat-badge">
+                    <span>${rank <= 3 ? '🏆' : '📊'}</span>
+                    <span>Rank #${rank}</span>
+                </div>
+                ` : ''}
+            `;
+            document.getElementById('modalTags').innerHTML = currentPrompt.tags
+                .map(tag => `<span class="tag">#${tag}</span>`).join('');
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        function copyPrompt() {
+            if (currentPrompt) {
+                navigator.clipboard.writeText(currentPrompt.prompt);
+                showToast('Prompt copied to clipboard! ✨');
+            }
+        }
+
+        function quickCopy(text) {
+            navigator.clipboard.writeText(text);
+            showToast('Prompt copied! ✨');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.add('active');
+            setTimeout(() => {
+                toast.classList.remove('active');
+            }, 2000);
+        }
+
+        // Search functionality with autocomplete
+        let searchQuery = '';
+        const searchInput = document.getElementById('searchInput');
+        const autocompleteDropdown = document.getElementById('autocompleteDropdown');
+        
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            searchQuery = query;
+            
+            if (query.length > 0) {
+                showAutocomplete(query);
+            } else {
+                hideAutocomplete();
+            }
+            
+            renderGallery();
+        });
+        
+        searchInput.addEventListener('focus', (e) => {
+            if (e.target.value.length > 0) {
+                showAutocomplete(e.target.value.toLowerCase());
+            }
+        });
+        
+        // Close autocomplete when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-box')) {
+                hideAutocomplete();
+            }
+        });
+        
+        function showAutocomplete(query) {
+            // Get all unique tags
+            const allTags = [...new Set(prompts.flatMap(p => p.tags))];
+            
+            // Find matching tags
+            const matchingTags = allTags.filter(tag => 
+                tag.toLowerCase().includes(query)
+            ).slice(0, 5);
+            
+            // Find matching prompts
+            const matchingPrompts = prompts.filter(p => 
+                p.prompt.toLowerCase().includes(query)
+            ).slice(0, 3);
+            
+            // Count results per tag
+            const tagCounts = {};
+            matchingTags.forEach(tag => {
+                tagCounts[tag] = prompts.filter(p => p.tags.includes(tag)).length;
+            });
+            
+            if (matchingTags.length === 0 && matchingPrompts.length === 0) {
+                hideAutocomplete();
+                return;
+            }
+            
+            let html = '';
+            
+            // Tags section
+            if (matchingTags.length > 0) {
+                html += '<div class="autocomplete-section">';
+                html += '<div class="autocomplete-label">🏷️ Tags</div>';
+                matchingTags.forEach(tag => {
+                    const highlighted = highlightMatch(tag, query);
+                    html += `
+                        <div class="autocomplete-item" onclick="selectSuggestion('${tag}')">
+                            <span class="icon">🏷️</span>
+                            <div class="text">
+                                <div class="main">${highlighted}</div>
+                            </div>
+                            <span class="count">${tagCounts[tag]} prompts</span>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+            
+            // Prompts section
+            if (matchingPrompts.length > 0) {
+                html += '<div class="autocomplete-section">';
+                html += '<div class="autocomplete-label">💡 Prompts</div>';
+                matchingPrompts.forEach(prompt => {
+                    const preview = prompt.prompt.substring(0, 60) + '...';
+                    const highlighted = highlightMatch(preview, query);
+                    html += `
+                        <div class="autocomplete-item" onclick="selectPrompt(${prompt.id})">
+                            <span class="icon">✨</span>
+                            <div class="text">
+                                <div class="main">${highlighted}</div>
+                                <div class="sub">${prompt.tags.slice(0, 3).map(t => '#' + t).join(' ')}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+            
+            autocompleteDropdown.innerHTML = html;
+            autocompleteDropdown.classList.add('active');
+        }
+        
+        function hideAutocomplete() {
+            autocompleteDropdown.classList.remove('active');
+        }
+        
+        function highlightMatch(text, query) {
+            const index = text.toLowerCase().indexOf(query.toLowerCase());
+            if (index === -1) return text;
+            
+            const before = text.substring(0, index);
+            const match = text.substring(index, index + query.length);
+            const after = text.substring(index + query.length);
+            
+            return `${before}<span class="match">${match}</span>${after}`;
+        }
+        
+        function selectSuggestion(tag) {
+            searchInput.value = tag;
+            searchQuery = tag.toLowerCase();
+            hideAutocomplete();
+            renderGallery();
+            showToast(`Showing prompts with #${tag}`);
+        }
+        
+        function selectPrompt(id) {
+            hideAutocomplete();
+            searchInput.value = '';
+            searchQuery = '';
+            openModal(id);
+        }
+
+        // Close modal on escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Initialize
+        renderGallery();
+    </script>
+</body>
+</html>
