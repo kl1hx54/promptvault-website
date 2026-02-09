@@ -2,8 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PromptVault Demo - Dynamic Sorting!</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#1a0033">
+    <meta name="description" content="Discover amazing AI image prompts - Free prompt gallery for Midjourney, DALL-E, Stable Diffusion">
+    <title>PromptVault - AI Image Prompts Gallery</title>
     <style>
         * {
             margin: 0;
@@ -244,9 +246,24 @@
         
         .gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 30px;
             margin-top: 60px;
+        }
+        
+        /* Tablet view - 2 columns */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .gallery {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 25px;
+            }
+        }
+        
+        /* Desktop view - 3-4 columns */
+        @media (min-width: 1025px) {
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            }
         }
         
         .card {
@@ -643,16 +660,245 @@
         }
         
         @media (max-width: 768px) {
-            .hero h1 { font-size: 48px; }
-            .hero p { font-size: 18px; }
+            /* Header adjustments */
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+            
+            .logo {
+                width: 40px;
+                height: 40px;
+                font-size: 24px;
+            }
+            
+            .logo-text {
+                font-size: 22px;
+            }
+            
+            .sort-tabs {
+                width: 100%;
+                justify-content: center;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .sort-tab {
+                white-space: nowrap;
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+            
+            /* Hero section */
+            .hero {
+                padding: 40px 15px 40px;
+            }
+            
+            .hero h1 { 
+                font-size: 36px;
+                line-height: 1.2;
+            }
+            
+            .hero p { 
+                font-size: 16px;
+                margin-bottom: 30px;
+            }
+            
+            .search-box {
+                max-width: 100%;
+            }
+            
+            .search-box input {
+                padding: 16px 16px 16px 50px;
+                font-size: 16px;
+            }
+            
+            .search-icon {
+                left: 15px;
+                font-size: 20px;
+            }
+            
+            /* Gallery grid */
+            .gallery {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                margin-top: 40px;
+            }
+            
+            /* Card adjustments */
+            .card {
+                max-width: 100%;
+            }
+            
+            .card-image {
+                aspect-ratio: 3/4;
+            }
+            
+            .card-stats {
+                top: 12px;
+                left: 12px;
+                right: 12px;
+            }
+            
+            .likes {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+            
+            .favorite-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+            
+            .copy-btn {
+                bottom: 12px;
+                right: 12px;
+                width: 44px;
+                height: 44px;
+                font-size: 18px;
+            }
+            
+            .card-overlay {
+                padding: 20px;
+            }
+            
+            .card-prompt {
+                font-size: 13px;
+                line-height: 1.5;
+            }
+            
+            .tag {
+                font-size: 11px;
+                padding: 5px 12px;
+            }
+            
+            /* Modal adjustments */
+            .modal {
+                padding: 10px;
+            }
+            
             .modal-content {
                 grid-template-columns: 1fr;
+                max-width: 100%;
+                border-radius: 24px;
             }
+            
+            .modal-image {
+                aspect-ratio: 1;
+                max-height: 60vh;
+            }
+            
             .modal-details {
-                padding: 30px;
+                padding: 30px 20px;
             }
-            .sort-tabs {
-                overflow-x: auto;
+            
+            .modal-title {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+            
+            .modal-prompt {
+                padding: 20px;
+                font-size: 15px;
+                line-height: 1.7;
+                margin-bottom: 20px;
+            }
+            
+            .modal-copy-btn {
+                padding: 16px;
+                font-size: 15px;
+                margin-bottom: 20px;
+            }
+            
+            .modal-stats {
+                flex-wrap: wrap;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+            
+            .stat-badge {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+            
+            .close-btn {
+                top: 15px;
+                right: 15px;
+                width: 44px;
+                height: 44px;
+                font-size: 22px;
+            }
+            
+            /* Autocomplete adjustments */
+            .autocomplete-dropdown {
+                border-radius: 12px;
+                max-height: 300px;
+            }
+            
+            .autocomplete-item {
+                padding: 12px 16px;
+            }
+            
+            .autocomplete-item .text .main {
+                font-size: 14px;
+            }
+            
+            .autocomplete-item .text .sub {
+                font-size: 12px;
+            }
+            
+            .autocomplete-label {
+                padding: 6px 16px;
+                font-size: 11px;
+            }
+            
+            /* Popular badge */
+            .popular-badge {
+                top: 55px;
+                left: 12px;
+                padding: 5px 12px;
+                font-size: 11px;
+                border-radius: 10px;
+            }
+            
+            /* Toast notifications */
+            .toast {
+                bottom: 20px;
+                right: 20px;
+                left: 20px;
+                padding: 16px 20px;
+                font-size: 14px;
+            }
+            
+            /* Container padding */
+            .container {
+                padding: 15px;
+            }
+        }
+        
+        /* Extra small phones (< 400px) */
+        @media (max-width: 400px) {
+            .hero h1 {
+                font-size: 28px;
+            }
+            
+            .hero p {
+                font-size: 14px;
+            }
+            
+            .sort-tab {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            
+            .modal-title {
+                font-size: 20px;
+            }
+            
+            .modal-details {
+                padding: 20px 15px;
             }
         }
     </style>
