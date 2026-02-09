@@ -878,7 +878,102 @@
                                 <span class="heart">❤️</span>
                                 <span>${prompt.currentLikes.toLocaleString()}</span>
                             </div>
-                            <div class="favorite-btn ${liked ? 'active' : ''}" onclick="event.stopPropagation(); toggleLike(${prompt.id})">
+    <script>
+        // Load prompts from Firebase (will be populated by Firebase SDK)
+        let prompts = [];
+
+        let currentPrompt = null;
+        let sortMode = 'popular';
+        
+        // Load likes from localStorage
+        let userLikes = JSON.parse(localStorage.getItem('promptvault_likes') || '{}');
+
+        function isLiked(id) {
+            return userLikes[id] === true;
+        }
+
+        function toggleLike(id) {
+            const prompt = prompts.find(p => p.id === id);
+            
+            if (userLikes[id]) {
+                // Unlike
+                delete userLikes[id];
+                prompt.currentLikes = prompt.likes;
+                showToast('Like removed! 💔');
+            } else {
+                // Like
+                userLikes[id] = true;
+                prompt.currentLikes = prompt.likes + 1;
+                showToast('Liked! ❤️ Now more popular!');
+            }
+            
+            localStorage.setItem('promptvault_likes', JSON.stringify(userLikes));
+            renderGallery();
+        }
+
+        function setSortMode(mode) {
+            sortMode = mode;
+            
+            // Update active tab
+            document.querySelectorAll('.sort-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(`tab-${mode}`).classList.add('active');
+            
+            renderGallery();
+        }
+
+        function getSortedPrompts() {
+            let filtered = [...prompts];
+            
+            // Apply search filter
+            if (searchQuery) {
+                filtered = filtered.filter(p => 
+                    p.prompt.toLowerCase().includes(searchQuery) || 
+                    p.tags.some(tag => tag.toLowerCase().includes(searchQuery))
+                );
+            }
+            
+            if (sortMode === 'popular') {
+                return filtered.sort((a, b) => b.currentLikes - a.currentLikes);
+            } else if (sortMode === 'newest') {
+                return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+            } else {
+                return filtered;
+            }
+        }
+
+        function renderGallery() {
+            const gallery = document.getElementById('gallery');
+            const sortedPrompts = getSortedPrompts();
+            
+            if (sortedPrompts.length === 0) {
+                gallery.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 80px 20px;">
+                        <div style="font-size: 64px; margin-bottom: 20px;">🔍</div>
+                        <h3 style="font-size: 24px; margin-bottom: 12px;">No prompts found</h3>
+                        <p style="color: #9ca3af;">Try adjusting your search or filters</p>
+                        ${searchQuery ? `<button onclick="clearSearch()" style="margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #9333ea, #ec4899); border: none; border-radius: 12px; color: white; font-weight: 600; cursor: pointer;">Clear Search</button>` : ''}
+                    </div>
+                `;
+                return;
+            }
+            
+            gallery.innerHTML = sortedPrompts.map((prompt, index) => {
+                const liked = isLiked(prompt.id);
+                const isTopRanked = sortMode === 'popular' && index < 3;
+                
+                return `
+                <div class="card" onclick="openModal('${prompt.id}')">
+                    <div class="card-image">
+                        <img src="${prompt.image}" alt="${prompt.prompt}">
+                        ${isTopRanked ? `<div class="popular-badge">${index === 0 ? '🏆' : index === 1 ? '🥈' : '🥉'} Top ${index + 1}</div>` : ''}
+                        <div class="card-stats">
+                            <div class="likes ${liked ? 'liked' : ''}">
+                                <span class="heart">❤️</span>
+                                <span>${prompt.currentLikes.toLocaleString()}</span>
+                            </div>
+                            <div class="favorite-btn ${liked ? 'active' : ''}" onclick="event.stopPropagation(); toggleLike('${prompt.id}')">
                                 ${liked ? '❤️' : '🤍'}
                             </div>
                         </div>
@@ -976,7 +1071,6 @@
             }
         });
         
-        // Close autocomplete when clicking outside
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.search-box')) {
                 hideAutocomplete();
@@ -984,20 +1078,15 @@
         });
         
         function showAutocomplete(query) {
-            // Get all unique tags
             const allTags = [...new Set(prompts.flatMap(p => p.tags))];
-            
-            // Find matching tags
             const matchingTags = allTags.filter(tag => 
                 tag.toLowerCase().includes(query)
             ).slice(0, 5);
             
-            // Find matching prompts
             const matchingPrompts = prompts.filter(p => 
                 p.prompt.toLowerCase().includes(query)
             ).slice(0, 3);
             
-            // Count results per tag
             const tagCounts = {};
             matchingTags.forEach(tag => {
                 tagCounts[tag] = prompts.filter(p => p.tags.includes(tag)).length;
@@ -1010,7 +1099,6 @@
             
             let html = '';
             
-            // Tags section
             if (matchingTags.length > 0) {
                 html += '<div class="autocomplete-section">';
                 html += '<div class="autocomplete-label">🏷️ Tags</div>';
@@ -1029,7 +1117,6 @@
                 html += '</div>';
             }
             
-            // Prompts section
             if (matchingPrompts.length > 0) {
                 html += '<div class="autocomplete-section">';
                 html += '<div class="autocomplete-label">💡 Prompts</div>';
@@ -1037,7 +1124,7 @@
                     const preview = prompt.prompt.substring(0, 60) + '...';
                     const highlighted = highlightMatch(preview, query);
                     html += `
-                        <div class="autocomplete-item" onclick="selectPrompt(${prompt.id})">
+                        <div class="autocomplete-item" onclick="selectPrompt('${prompt.id}')">
                             <span class="icon">✨</span>
                             <div class="text">
                                 <div class="main">${highlighted}</div>
@@ -1083,13 +1170,95 @@
             openModal(id);
         }
 
-        // Close modal on escape
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeModal();
         });
+    </script>
 
-        // Initialize
-        renderGallery();
+    <!-- 🔥 FIREBASE SDK -->
+    <script type="module">
+        // Import Firebase
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDtOe7B00n6c8SYvoQpRYqbP_B89UY8sfA",
+            authDomain: "promptvault-637f7.firebaseapp.com",
+            projectId: "promptvault-637f7",
+            storageBucket: "promptvault-637f7.firebasestorage.app",
+            messagingSenderId: "16809923431",
+            appId: "1:16809923431:web:83f03ff602dc759c7295c2",
+            measurementId: "G-D9EYFK29WH"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        console.log('🔥 Firebase initialized in gallery!');
+
+        // Load prompts from Firebase
+        async function loadPromptsFromFirebase() {
+            try {
+                console.log('📡 Loading prompts from Firebase...');
+                const q = query(collection(db, "prompts"), orderBy("date", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                const firebasePrompts = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    firebasePrompts.push({
+                        id: doc.id,
+                        image: data.image,
+                        prompt: data.prompt,
+                        tags: data.tags || [],
+                        likes: data.likes || 0,
+                        date: data.date,
+                        currentLikes: data.likes || 0
+                    });
+                });
+
+                // Update global prompts variable
+                window.prompts = firebasePrompts;
+                prompts = firebasePrompts;
+                
+                // Update likes from localStorage
+                prompts.forEach(prompt => {
+                    if (userLikes[prompt.id]) {
+                        prompt.currentLikes = prompt.likes + 1;
+                    } else {
+                        prompt.currentLikes = prompt.likes;
+                    }
+                });
+
+                // Re-render gallery
+                renderGallery();
+
+                console.log('✅ Loaded', firebasePrompts.length, 'prompts from Firebase');
+            } catch (error) {
+                console.error('❌ Error loading prompts:', error);
+                // Show error to user
+                const gallery = document.getElementById('gallery');
+                gallery.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 80px 20px;">
+                        <div style="font-size: 64px; margin-bottom: 20px;">⚠️</div>
+                        <h3 style="font-size: 24px; margin-bottom: 12px; color: white;">Could not load prompts</h3>
+                        <p style="color: #9ca3af; margin-bottom: 10px;">Please check your internet connection and refresh.</p>
+                        <p style="color: #ef4444; font-size: 14px;">${error.message}</p>
+                        <button onclick="location.reload()" style="margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #9333ea, #ec4899); border: none; border-radius: 12px; color: white; font-weight: 600; cursor: pointer;">🔄 Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        // Load on page start
+        loadPromptsFromFirebase();
+
+        // Reload every 30 seconds to get new prompts automatically
+        setInterval(loadPromptsFromFirebase, 30000);
+
+        console.log('✅ Firebase gallery ready!');
     </script>
 </body>
 </html>
